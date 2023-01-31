@@ -8,6 +8,10 @@ use App\Http\Requests\UpdateProjectRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Project;
+use App\Models\Technology;
+use App\Models\Type;
+
+
 use Illuminate\Support\Str;
 
 class ProjectController extends Controller
@@ -31,7 +35,10 @@ class ProjectController extends Controller
      */
     public function create()
     {        
-        return view('admin.projects.create');
+        $types = Type::all();
+        $technologies = Technology::all();
+
+        return view('admin.projects.create', compact('types', 'technologies'));
     }
 
     /**
@@ -56,6 +63,9 @@ class ProjectController extends Controller
 
         $new_project->save();
 
+        $technologies = isset($data['technologies']) ? $data['technologies'] : [];
+        $new_project->technologies()->sync($technologies);
+
         return redirect()->route('admin.projects.index')->with('message', 'Progetto aggiunto con successo');
     }
 
@@ -79,7 +89,10 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        return view('admin.projects.edit', compact('project'));
+        $types = Type::all();
+        $technologies = Technology::all();
+
+        return view('admin.projects.edit', compact('project', 'types', 'technologies'));
     }
 
     /**
@@ -101,6 +114,9 @@ class ProjectController extends Controller
         $project->update($data);        
         $project->slug = Str::slug($project->title);
         $project->save();
+
+        $technologies = isset($data['technologies']) ? $data['technologies'] : [];
+        $project->technologies()->sync($technologies);
 
         return redirect()->route('admin.projects.index')->with('message', 'Progetto aggiornato con successo');
     }
